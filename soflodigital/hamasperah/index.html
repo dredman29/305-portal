@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>BARBERSHOP-המספרה | Daniel the Barber</title>
+  <style>
+    :root {
+      --bg: #0b0d10;
+      --surface: #14181f;
+      --surface-border: #222834;
+      --accent: #d4af37;
+      --accent-hover: #c29f2e;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* Scroll Pop-up Animation Classes */
+    .reveal {
+      opacity: 0;
+      transform: translateY(40px) scale(0.95);
+      transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+      will-change: transform, opacity;
+    }
+
+    .reveal.active {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    /* Staggered Delay for Grid Elements */
+    .delay-1 { transition-delay: 0.1s; }
+    .delay-2 { transition-delay: 0.2s; }
+    .delay-3 { transition-delay: 0.3s; }
+
+    /* Password Protection Overlay */
+    #pass-gate {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: var(--bg);
+      z-index: 9999;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .pass-box {
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      padding: 2.5rem;
+      border-radius: 16px;
+      text-align: center;
+      max-width: 380px;
+      width: 90%;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+    }
+
+    .pass-box h2 {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .pass-box p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .pass-input {
+      width: 100%;
+      padding: 0.8rem;
+      background: var(--bg);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      color: var(--text-main);
+      font-size: 1.1rem;
+      text-align: center;
+      margin-bottom: 1rem;
+      letter-spacing: 4px;
+    }
+
+    .pass-input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .pass-error {
+      color: #ef4444;
+      font-size: 0.85rem;
+      display: none;
+      margin-bottom: 1rem;
+    }
+
+    /* Hide Main Content Initially */
+    #protected-content {
+      display: none;
+    }
+
+    header {
+      background: rgba(11, 13, 16, 0.9);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-bottom: 1px solid var(--surface-border);
+    }
+
+    .nav-container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 1rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      font-size: 1.3rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text-main);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .logo span {
+      color: var(--accent);
+    }
+
+    .nav-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--text-main);
+      border: 1px solid var(--surface-border);
+      font-weight: 600;
+      padding: 0.65rem 1.1rem;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #000;
+      font-weight: 700;
+      padding: 0.65rem 1.3rem;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      display: inline-block;
+      font-size: 0.95rem;
+      border: none;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+    }
+
+    .hero {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 4.5rem 1.5rem 3.5rem;
+      text-align: center;
+    }
+
+    .hero-badge {
+      display: inline-block;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      color: var(--accent);
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 0.4rem 1rem;
+      border-radius: 20px;
+      margin-bottom: 1.25rem;
+    }
+
+    .hero h1 {
+      font-size: clamp(2.2rem, 5vw, 3.8rem);
+      line-height: 1.15;
+      margin-bottom: 1rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+    }
+
+    .hero p {
+      color: var(--text-muted);
+      font-size: 1.15rem;
+      max-width: 650px;
+      margin: 0 auto 1.5rem;
+    }
+
+    .hero-contact-info {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 2rem;
+      font-size: 0.95rem;
+      color: var(--text-main);
+    }
+
+    .hero-contact-info a {
+      color: var(--accent);
+      text-decoration: none;
+      direction: ltr;
+      display: inline-block;
+    }
+
+    .section {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem;
+    }
+
+    .section-title {
+      font-size: 1.8rem;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.02em;
+    }
+
+    .section-subtitle {
+      color: var(--text-muted);
+      margin-bottom: 2rem;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: border-color 0.2s ease, transform 0.7s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .card:hover {
+      border-color: rgba(212, 175, 55, 0.4);
+    }
+
+    .card h3 {
+      font-size: 1.2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .price {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin-top: 1rem;
+    }
+
+    .review-stars {
+      color: var(--accent);
+      margin-bottom: 0.75rem;
+      letter-spacing: 2px;
+    }
+
+    .review-text {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      margin-bottom: 1.25rem;
+      flex-grow: 1;
+    }
+
+    .review-author {
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .review-meta {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+    }
+
+    .gallery-grid img {
+      width: 100%;
+      height: 280px;
+      object-fit: cover;
+      border-radius: 10px;
+      border: 1px solid var(--surface-border);
+      transition: border-color 0.2s ease, transform 0.7s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .info-card {
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 12px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      text-align: center;
+    }
+
+    .info-card h3 {
+      color: var(--accent);
+      font-size: 1.3rem;
+    }
+
+    .cta-banner {
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 16px;
+      padding: 3.5rem 1.5rem;
+      text-align: center;
+      margin: 3rem 1.5rem;
+    }
+
+    .cta-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(8px);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal-box {
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 16px;
+      padding: 2rem;
+      width: 90%;
+      max-width: 450px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+    }
+
+    .modal-box h3 {
+      font-size: 1.4rem;
+      margin-bottom: 1rem;
+      color: var(--accent);
+    }
+
+    .modal-form {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .modal-form label {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      text-align: left;
+    }
+
+    .modal-form input, .modal-form select {
+      background: var(--bg);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      padding: 0.75rem;
+      color: var(--text-main);
+      font-size: 1rem;
+    }
+
+    .modal-form input:focus, .modal-form select:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .modal-close {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      float: right;
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+
+    footer {
+      border-top: 1px solid var(--surface-border);
+      text-align: center;
+      padding: 2.5rem 1.5rem;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Password Entry Gate -->
+  <div id="pass-gate">
+    <div class="pass-box">
+      <h2>305 Digital Agency Demo</h2>
+      <p>Enter password to preview BARBERSHOP-המספרה</p>
+      <input type="password" id="passInput" class="pass-input" placeholder="••••" autofocus onkeydown="checkEnter(event)">
+      <div id="passError" class="pass-error">Incorrect password. Try again.</div>
+      <button onclick="validatePassword()" class="btn-primary">Unlock Preview</button>
+    </div>
+  </div>
+
+  <!-- Protected Site Content -->
+  <div id="protected-content">
+    <header>
+      <div class="nav-container">
+        <a href="#" class="logo">BARBERSHOP<span>-המספרה</span></a>
+        <div class="nav-actions">
+          <a href="tel:+13476050588" class="btn-primary" style="width: auto;">📞 Call +1 (347) 605-0588</a>
+        </div>
+      </div>
+    </header>
+
+    <section class="hero reveal">
+      <span class="hero-badge">Hallandale Beach • By Appointment Only</span>
+      <h1>BARBERSHOP-המספרה</h1>
+      <p>Precision men's haircuts, clean skin fades, and expert beard sculpting. One-on-one professional studio service with zero wait times.</p>
+      
+      <div class="hero-contact-info">
+        <div>📍 401 N Federal Hwy, Hallandale Beach, FL 33009</div>
+        <div>📞 <a href="tel:+13476050588">+1 (347) 605-0588</a></div>
+      </div>
+
+      <div class="cta-buttons">
+        <a href="tel:+13476050588" class="btn-primary" style="padding: 0.85rem 2.2rem; font-size: 1.05rem; width: auto;">Call to Book: +1 (347) 605-0588</a>
+        <button onclick="openBookingModal()" class="btn-secondary" style="padding: 0.85rem 1.8rem; font-size: 1.05rem;">Request Appointment Online</button>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title reveal">Work Gallery</h2>
+      <p class="section-subtitle reveal">Consistent, high-quality cuts tailored to your unique style.</p>
+      <div class="gallery-grid">
+        <img class="reveal delay-1" src="gallery1.jpg" alt="Work sample 1">
+        <img class="reveal delay-2" src="gallery2.jpg" alt="Work sample 2">
+        <img class="reveal delay-3" src="gallery3.jpg" alt="Work sample 3">
+      </div>
+    </section>
+
+    <section class="section">
+      <h2 class="section-title reveal">Services & Pricing</h2>
+      <p class="section-subtitle reveal">A complete grooming setup with premium hair products and refreshments.</p>
+      <div class="grid-3">
+        <div class="card reveal delay-1">
+          <div>
+            <h3>Haircut & Styling</h3>
+            <p style="color: var(--text-muted); font-size: 0.95rem;">Personal consultation, custom haircut based on head shape, and styling finish.</p>
+          </div>
+          <div class="price">$30 – $40</div>
+        </div>
+        <div class="card reveal delay-2">
+          <div>
+            <h3>Signature Fade & Beard Trim</h3>
+            <p style="color: var(--text-muted); font-size: 0.95rem;">Sharp lineup, clean fade, detailed beard sculpting, and razor finish.</p>
+          </div>
+          <div class="price">$40 – $50</div>
+        </div>
+        <div class="card reveal delay-3">
+          <div>
+            <h3>Full VIP Experience</h3>
+            <p style="color: var(--text-muted); font-size: 0.95rem;">Full 1-hour dedicated studio session, complete beard care, music, and drinks.</p>
+          </div>
+          <div class="price">$50+</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="info-card reveal">
+        <h3>Location & Contact</h3>
+        <p>📍 <strong>Address:</strong> 401 N Federal Hwy, Hallandale Beach, FL 33009</p>
+        <p>📞 <strong>Phone:</strong> <a href="tel:+13476050588" style="color: var(--accent); text-decoration: none;">+1 (347) 605-0588</a></p>
+        <div style="margin-top: 0.5rem;">
+          <a href="https://maps.google.com/?q=401+N+Federal+Hwy,+Hallandale+Beach,+FL+33009" target="_blank" class="btn-secondary">Open in Google Maps</a>
+        </div>
+      </div>
+
+      <h2 class="section-title reveal">Client Reviews</h2>
+      <p class="section-subtitle reveal">Verified feedback from regular clients.</p>
+      <div class="grid-3">
+        <div class="card reveal delay-1">
+          <div class="review-stars">★★★★★</div>
+          <p class="review-text">"Daniel is absolutely amazing! His attention to detail is incredible, and his enthusiasm really shows in the quality of his work."</p>
+          <div class="review-author">Saba</div>
+          <div class="review-meta">Local Client</div>
+        </div>
+        <div class="card reveal delay-2">
+          <div class="review-stars">★★★★★</div>
+          <p class="review-text">"Super reliable, experienced and professional. Works by appointment only which I love. One man show and the quality of the cut is great."</p>
+          <div class="review-author">Loren S</div>
+          <div class="review-meta">Local Client</div>
+        </div>
+        <div class="card reveal delay-3">
+          <div class="review-stars">★★★★★</div>
+          <p class="review-text">"The barber is attentive and patient, extremely professional. He gave me an amazing haircut, spent nearly an hour, and listened to all requests."</p>
+          <div class="review-author">Idan Moshaiv</div>
+          <div class="review-meta">Local Client</div>
+        </div>
+      </div>
+    </section>
+
+    <div class="cta-banner reveal" id="book">
+      <h2 style="font-size: 1.9rem; margin-bottom: 0.5rem;">Ready to Reserve Your Chair?</h2>
+      <p style="color: var(--text-muted); margin-bottom: 1.8rem;">Sessions are by appointment only to guarantee personal attention for every client.</p>
+      <div class="cta-buttons">
+        <a href="tel:+13476050588" class="btn-primary" style="padding: 0.9rem 2.2rem; font-size: 1.1rem; width: auto;">Call Now: +1 (347) 605-0588</a>
+        <button onclick="openBookingModal()" class="btn-secondary" style="padding: 0.9rem 2rem; font-size: 1.1rem;">Schedule Appointment</button>
+      </div>
+    </div>
+
+    <!-- Interactive Booking Modal -->
+    <div class="modal-overlay" id="bookingModal">
+      <div class="modal-box">
+        <button class="modal-close" onclick="closeBookingModal()">✕</button>
+        <h3>Request Your Appointment</h3>
+        <form class="modal-form" onsubmit="submitBooking(event)">
+          <label>
+            Full Name:
+            <input type="text" id="clientName" required placeholder="Enter your name">
+          </label>
+          <label>
+            Service:
+            <select id="serviceType">
+              <option>Haircut & Styling ($30–$40)</option>
+              <option>Signature Fade & Beard Trim ($40–$50)</option>
+              <option>Full VIP Experience ($50+)</option>
+            </select>
+          </label>
+          <label>
+            Preferred Date:
+            <input type="date" id="bookingDate" required>
+          </label>
+          <label>
+            Preferred Time:
+            <input type="time" id="bookingTime" required>
+          </label>
+          <button type="submit" class="btn-primary" style="margin-top: 0.5rem;">Send SMS Request</button>
+        </form>
+      </div>
+    </div>
+
+    <footer>
+      <p>© 2026 BARBERSHOP-המספרה | Daniel the Barber. All rights reserved.</p>
+    </footer>
+  </div>
+
+  <script>
+    // Password Gate Script
+    const CORRECT_PASSWORD = "Hamasperah305";
+
+    function validatePassword() {
+      const input = document.getElementById("passInput").value;
+      const errorDiv = document.getElementById("passError");
+      const gate = document.getElementById("pass-gate");
+      const content = document.getElementById("protected-content");
+
+      if (input === CORRECT_PASSWORD) {
+        gate.style.display = "none";
+        content.style.display = "block";
+        // Initialize reveal animations once content is visible
+        setTimeout(revealOnScroll, 100);
+      } else {
+        errorDiv.style.display = "block";
+        document.getElementById("passInput").value = "";
+      }
+    }
+
+    function checkEnter(event) {
+      if (event.key === "Enter") {
+        validatePassword();
+      }
+    }
+
+    // Scroll Pop-up Effect Script
+    function revealOnScroll() {
+      const reveals = document.querySelectorAll('.reveal');
+      const windowHeight = window.innerHeight;
+
+      reveals.forEach(element => {
+        const elementTop = element.getBoundingClientRect().top;
+        const revealPoint = 100;
+
+        if (elementTop < windowHeight - revealPoint) {
+          element.classList.add('active');
+        }
+      });
+    }
+
+    window.addEventListener('scroll', revealOnScroll);
+
+    // Modal & App Functionality
+    function openBookingModal() {
+      document.getElementById('bookingModal').style.display = 'flex';
+    }
+
+    function closeBookingModal() {
+      document.getElementById('bookingModal').style.display = 'none';
+    }
+
+    function submitBooking(event) {
+      event.preventDefault();
+      const name = document.getElementById('clientName').value;
+      const service = document.getElementById('serviceType').value;
+      const date = document.getElementById('bookingDate').value;
+      const time = document.getElementById('bookingTime').value;
+
+      const message = `Hello Daniel, I'd like to book an appointment.\nName: ${name}\nService: ${service}\nDate: ${date}\nTime: ${time}`;
+      const bodyText = encodeURIComponent(message);
+
+      window.open(`sms:+13476050588?body=${bodyText}`, '_self');
+      closeBookingModal();
+    }
+  </script>
+
+</body>
+</html>
