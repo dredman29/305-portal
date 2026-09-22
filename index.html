@@ -652,7 +652,7 @@ footer{ padding: 56px 24px 100px; }
     </div>
     <p class="portal-sub">Pick how many edits to add, then how you'll pay.</p>
     <div id="payPacks" style="display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 10px;"></div>
-    <p class="portal-sub">Pay Daniel directly with Cash App / Venmo / PayPal, then tap "I paid" (he adds your credits).</p>
+    <p class="portal-sub">Pay Daniel directly with PayPal, then tap "I paid" (he adds your credits).</p>
     <div id="payBtns" style="display:flex;flex-direction:column;gap:8px;margin:6px 0;"></div>
     <div id="ppayMoney" style="margin:8px 0;display:none;">
       <p class="portal-sub" style="margin:0 0 4px;">or pay instantly — credits are added automatically:</p>
@@ -869,11 +869,8 @@ window.onhashchange = checkAdminRoute;
     VIP:   { edits: 15, extraLabel: '5 extra edits — $20', extraEdits: 5 }
   };
 
-  /* Where clients send payment. Fill in YOUR cash app tag / venmo username /
-     paypal.me handle after clicking the blue "Pay with" button. */
+  /* Where clients send payment. PayPal only — fill in YOUR paypal.me handle. */
   const PAY_LINKS = {
-    CashApp: 'https://cash.app/REPLACE_CASHAPP_TAG',
-    Venmo:   'https://venmo.com/u/REPLACE_VENMO_USER',
     PayPal:  'https://www.paypal.com/paypalme/REPLACE_PAYPAL_ME'
   };
 
@@ -1213,7 +1210,7 @@ window.onhashchange = checkAdminRoute;
     if (!payRailSel) { $('payStatus').textContent = 'First tap which app you\u2019re paying with.'; return; }
     $('payStatus').textContent = 'Sending your request\u2026';
     try {
-      const data = await api({ action: 'requestCredits', rail: payRailSel, credits: payCredits });
+      const data = await api({ action: 'requestCredits', token: liveToken, rail: payRailSel, credits: payCredits });
       if (!data.ok) throw new Error(data.error || 'request failed');
       $('payBtns').innerHTML = '';
       $('payStatus').textContent = 'Request sent for ' + payCredits + ' credit' + (payCredits > 1 ? 's' : '') + '\u2026 Once Daniel sees your payment, your credits will be added.';
@@ -1244,13 +1241,13 @@ window.onhashchange = checkAdminRoute;
       window.paypal.Buttons({
         style: { color: 'gold', height: 44, label: 'pay' },
         createOrder: async () => {
-          const res = await api({ action: 'ppay.create', credits: payCredits });
+          const res = await api({ action: 'ppay.create', token: liveToken, credits: payCredits });
           if (!res.ok || !res.orderId) { $('payStatus').textContent = res.error || 'Could not start PayPal.'; throw new Error('create failed'); }
           return res.orderId;
         },
         onApprove: async (data) => {
           $('payStatus').textContent = 'Confirming payment\u2026';
-          const res = await api({ action: 'ppay.capture', orderId: data.orderID, credits: payCredits });
+          const res = await api({ action: 'ppay.capture', token: liveToken, orderId: data.orderID, credits: payCredits });
           if (res.ok && res.account) {
             liveAcct = res.account;
             payClose();
